@@ -8,18 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-//@NoArgsConstructor
+@NoArgsConstructor
 @Data
 public class GraphQL {
 
     private MyData data = new MyData();
 
-    public GraphQL(){
-        System.out.println(22);
-    }
 
-
-    private MyData getData(){
+    public MyData getData(){
 
         List<Country> countryList = new ArrayList<>();
 

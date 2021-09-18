@@ -8,7 +8,9 @@ class GraphQLTest {
     @Test
     public void graphQL(){
         System.out.println(new GraphQL());
-        System.out.println(JSON.parseObject(JSON.toJSONString(new GraphQL())));
+        GraphQL graphQL = new GraphQL();
+        graphQL.getData();
+        System.out.println(JSON.parseObject(JSON.toJSONString(graphQL)));
     }
 
 }

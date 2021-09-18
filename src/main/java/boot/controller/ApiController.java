@@ -1,6 +1,7 @@
 package boot.controller;
 
 import boot.controller.entity.GraphQL;
+import boot.controller.entity.MyData;
 import boot.controller.entity.NewDate;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,9 @@ public class ApiController {
 
     @PostMapping("/getGraphQL")
     public GraphQL getGraphQL(){
+        System.out.println(new MyData());
+        GraphQL graphQL = new GraphQL();
+        graphQL.getData();
         return new GraphQL();
     }
 
