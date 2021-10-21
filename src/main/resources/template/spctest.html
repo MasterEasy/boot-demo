@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <!--设置颜色-->
+    <!--https://bbs.csdn.net/topics/392568329-->
+
+    <!-- 引入刚刚下载的 ECharts 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.1/dist/echarts.js"></script>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+<!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+<div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart ;
+
+    //调用接口数据
+    let allData = [];
+    //均值
+    let seriesData = [];
+    //极差值
+    let rangeData = [];
+    //x轴坐标值
+    let xData = [];
+    //中心限
+    let center = 0;
+    //上限
+    let upper = 0;
+    //下限
+    let lower = 0;
+    let testData = [{value: 1,itemStyle:{color:'red'}},{value: 6,itemStyle:{color:'red'}}];
+    axios.get('http://192.168.2.251:8081/spc/getSpc', {})
+        .then(function (res) {
+            allData = res.data;
+            allData.forEach(data => {
+                //console.log(data)
+                const {upper, center, lower, sum, avg, range, id} = data;
+                let seriesValue = {value: avg, itemStyle: {color: avg > upper || avg < lower ? 'red' : 'skyblue'}};
+                seriesData.push(seriesValue);
+                xData.push(Number(id));
+                rangeData.push(range);
+            });
+            //console.log(seriesData,seriesData.length);
+            //console.log(allData[1].upper)
+            //异步赋值
+            upper = allData[1].upper;
+            center = allData[1].center;
+            lower = allData[1].lower;
+            console.log(upper,center,lower)
+            //升序排序
+            xData.sort(function (a,b) {
+                return a-b;
+            });
+            // 基于准备好的dom，初始化echarts实例
+             myChart = echarts.init(document.getElementById('main'));
+
+            // 指定图表的配置项和数据
+            var option = {
+                title: {
+                    text: 'SPC X-R图'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false, //
+                    data: xData,
+                    //show: false,
+                    splitLine: {
+                        show: false
+                    }
+                },
+                yAxis: {
+                    //show: false,
+                    splitLine: {
+                        show: false
+                    },
+                    //min: 'dataMin'
+                    type: 'value',
+                    max: 0.96,
+                    min: 0.81,
+                    scale: true,
+                    //precision: 6,
+                    //splitNumber: 10,
+                    //boundaryGap: [0.001, 0.001],
+                    // splitArea: { show: true }
+                    //type: 'category',
+                    //data: [1,2,3,4,5,6,7,8,9]
+                },
+                series: [
+                    {
+                        data: seriesData,
+                        type: 'line',
+                        name: 'X',
+                        itemStyle: {
+                            color: '#8c00ff',
+                        },
+                        endLabel: {
+                            fontStyle: "italic",
+                            color: 'red'
+                        },
+                        //colorBy: 'data', //每个数据项都使用不同的颜色
+                        markLine: {
+                            symbol: 'none',//去掉箭头
+                            color: 'red',
+                            lineStyle: {
+                                shadowColor: 'rgba(0, 0, 0, 0.5)',
+                                shadowBlur: 10
+                            },
+                            label: {
+                                color: 'black' //设置数据字体颜色
+                            },
+                            itemStyle: {
+                                normal: {
+                                    lineStyle: {
+                                        color: '#00FF00',
+                                        backgroundColor: 'red'
+                                    }
+                                }
+                            },
+                            data: [
+                                {
+                                    //name: 'Y 轴值为 100 的水平线',
+                                    yAxis: upper.toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black'
+                                    },
+                                    label: {
+                                        //position:'end',
+                                        formatter: "UCL={c}"
+                                    },
+                                },
+                                {
+                                    yAxis: center.toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black'
+                                    },
+                                    label: {
+                                        //position:'middle',
+                                        formatter: "CL={c}"
+                                    },
+                                },
+                                {
+                                    yAxis: (center-0.01).toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black',
+                                    },
+                                    label: {
+                                        //position:'start',
+                                        formatter: "",
+                                    }
+                                },
+                                {
+                                    yAxis: (center-0.02).toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black',
+                                    },
+                                    label: {
+                                        //position:'start',
+                                        formatter: ""
+                                    },
+                                },
+                                {
+                                    yAxis: (center+0.02).toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black'
+                                    },
+                                    label: {
+                                        formatter: ""
+                                    },
+                                },
+                                {
+                                    yAxis: (center+0.01).toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black',
+                                    },
+                                    label: {
+                                        formatter: ""
+                                    },
+                                },
+                                {
+                                    yAxis: lower.toFixed(3),
+                                    lineStyle: {
+                                        type: 'solid',
+                                        color: 'black'
+                                    },
+                                    label: {
+                                        formatter: "LCL={c}"
+                                    },
+                                },
+                                // {
+                                //     name: '上上限值',
+                                //     yAxis: 5,
+                                //     lineStyle: {
+                                //         type: 'solid',
+                                //         color: 'black'
+                                //     },
+                                //     label: {
+                                //         formatter: "USL={c}"
+                                //     },
+                                // },
+                                // {
+                                //     name: '下下限值',
+                                //     yAxis: 9,
+                                //     lineStyle: {
+                                //         type: 'solid',
+                                //         color: 'black'
+                                //     },
+                                //     label: {
+                                //         formatter: "LSL={c}"
+                                //     },
+                                // }
+                            ]
+                        },
+                        markArea: { //标记区域
+                            itemStyle: { //全局的
+                                normal: {color: 'skyblue'}
+                            },
+                            data: [
+                                [{
+                                    yAxis: center.toFixed(3),
+                                    itemStyle: {
+                                        color: '#44ff00'
+                                    }
+                                }, {
+                                    yAxis: (center+0.01).toFixed(3),
+                                }],
+                                [{
+                                    yAxis: (center-0.01).toFixed(3),
+                                    itemStyle: {
+                                        color: '#44ff00'
+                                    }
+                                }, {
+                                    yAxis: center.toFixed(3)
+                                }],
+                                [{
+                                    yAxis: (center+0.01).toFixed(3),
+                                    itemStyle: {
+                                        color: '#ffb400'
+                                    }
+                                }, {
+                                    yAxis: (center+0.02).toFixed(3)
+                                }],
+                                [{
+                                    yAxis: (center-0.02).toFixed(3),
+                                    itemStyle: {
+                                        color: '#ffb400'
+                                    }
+                                }, {
+                                    yAxis: (center-0.01).toFixed(3)
+                                }],
+                                [{
+                                    yAxis: lower.toFixed(3),
+                                    itemStyle: {
+                                        color: '#ff001e'
+                                    }
+                                }, {
+                                    yAxis: (center-0.02).toFixed(3)
+                                }],
+                                [{
+                                    yAxis: (center+0.02).toFixed(3),
+                                    itemStyle: {
+                                        color: '#ff001e'
+                                    }
+                                }, {
+                                    yAxis: upper.toFixed(3)
+                                }]
+                            ]
+                        },
+                    },
+                    {name : 'R',type: 'line',data: rangeData}
+                ]
+            };
+
+
+            myChart.setOption(option);
+
+            // 使用刚指定的配置项和数据显示图表。
+
+            myChart.on('click', function (params) {
+                // 控制台打印数据的名称
+                // console.log(params.name);
+                // console.log(params.componentType);
+                // console.log(params.seriesType);
+                console.log(params.type)
+
+                if (params.componentType === 'series') {
+                    if (params.seriesType === 'line') {
+                        if (params.dataType === 'edge') {
+                            // 点击到了 graph 的 edge（边）上。
+                            alert(1)
+                        } else {
+                            // 点击到了 graph 的 node（节点）上。
+
+                            alert(params.name);
+                        }
+                    }
+                }
+            });
+
+
+
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+    // // 指定图表的配置项和数据
+    // var option = {
+    //     title: {
+    //         text: 'SPC X-R图'
+    //     },
+    //     tooltip: {
+    //         trigger: 'axis'
+    //     },
+    //     xAxis: {
+    //         type: 'category',
+    //         boundaryGap: false, //
+    //         data: xData,
+    //         //show: false,
+    //         splitLine: {
+    //             show: false
+    //         }
+    //     },
+    //     yAxis: {
+    //         //show: false,
+    //         splitLine: {
+    //             show: false
+    //         },
+    //         //min: 'dataMin'
+    //         type: 'value',
+    //         min: 0,
+    //         max: 1,
+    //         splitNumber: 10,
+    //         //type: 'category',
+    //         //data: [1,2,3,4,5,6,7,8,9]
+    //     },
+    //     series: [
+    //         {
+    //             data: seriesData,
+    //             type: 'line',
+    //             name: 'X',
+    //             itemStyle: {
+    //                 color: '#8c00ff',
+    //             },
+    //             endLabel: {
+    //                 fontStyle: "italic",
+    //                 color: 'red'
+    //             },
+    //             //colorBy: 'data', //每个数据项都使用不同的颜色
+    //             markLine: {
+    //                 symbol: 'none',//去掉箭头
+    //                 color: 'red',
+    //                 lineStyle: {
+    //                     shadowColor: 'rgba(0, 0, 0, 0.5)',
+    //                     shadowBlur: 10
+    //                 },
+    //                 label: {
+    //                     color: 'black' //设置数据字体颜色
+    //                 },
+    //                 itemStyle: {
+    //                     normal: {
+    //                         lineStyle: {
+    //                             color: '#00FF00',
+    //                             backgroundColor: 'red'
+    //                         }
+    //                     }
+    //                 },
+    //                 data: [
+    //                     // {type: 'max',name: 8},
+    //                     // {type: 'min',name:6},
+    //                     // {type: 'average', name: 'Avg'},
+    //                     {
+    //                         //name: 'Y 轴值为 100 的水平线',
+    //                         yAxis: 0.1,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             //position:'end',
+    //                             formatter: "UCL={c}"
+    //                         },
+    //                     },
+    //                     {
+    //                         //name: 'Y 轴值为 100 的水平线',
+    //                         yAxis: center,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             //position:'middle',
+    //                             formatter: "CL={c}"
+    //                         },
+    //                     },
+    //                     {
+    //                         //name: 'Y 轴值为 100 的水平线',
+    //                         yAxis: 7.49,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black',
+    //                             //color: 'red'  //设置线的颜色
+    //                         },
+    //                         label: {
+    //                             //position:'start',
+    //                             formatter: "",
+    //                         }
+    //                     },
+    //                     {
+    //                         //name: 'Y 轴值为 100 的水平线',
+    //                         yAxis: 7.19,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black',
+    //                         },
+    //                         label: {
+    //                             //position:'start',
+    //                             formatter: ""
+    //                         },
+    //                     },
+    //                     {
+    //                         yAxis: 6.56,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             formatter: ""
+    //                         },
+    //                     },
+    //                     {
+    //                         yAxis: 6.31,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black',
+    //                         },
+    //                         label: {
+    //                             formatter: ""
+    //                         },
+    //                     },
+    //                     {
+    //                         yAxis: 6.06,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             formatter: "LCL={c}"
+    //                         },
+    //                     },
+    //                     {
+    //                         yAxis: 5,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             formatter: "USL={c}"
+    //                         },
+    //                     },
+    //                     {
+    //                         yAxis: 9,
+    //                         lineStyle: {
+    //                             type: 'solid',
+    //                             color: 'black'
+    //                         },
+    //                         label: {
+    //                             formatter: "LSL={c}"
+    //                         },
+    //                     }
+    //                 ]
+    //             },
+    //             visualMap: [{
+    //                 type: 'piecewise',
+    //                 show: false,
+    //                 dimension: 0,
+    //                 seriesIndex: 0, //第一部分数据
+    //                 pieces: [
+    //                     {ge: 8, label: '123（自定义特殊颜色）', color: '#ffb400'},
+    //                 ]
+    //             }],
+    //             markArea: { //标记区域
+    //                 itemStyle: { //全局的
+    //                     normal: {color: 'skyblue'}
+    //                 },
+    //                 data: [
+    //                     [{
+    //                         yAxis: '6.56',
+    //                         itemStyle: {
+    //                             color: '#44ff00'
+    //                         }
+    //                     }, {
+    //                         yAxis: '6.89'
+    //                     }],
+    //                     [{
+    //                         yAxis: '6.89',
+    //                         itemStyle: {
+    //                             color: '#44ff00'
+    //                         }
+    //                     }, {
+    //                         yAxis: '7.19'
+    //                     }],
+    //                     [{
+    //                         yAxis: '6.31',
+    //                         itemStyle: {
+    //                             color: '#ffb400'
+    //                         }
+    //                     }, {
+    //                         yAxis: '6.56'
+    //                     }],
+    //                     [{
+    //                         yAxis: '7.19',
+    //                         itemStyle: {
+    //                             color: '#ffb400'
+    //                         }
+    //                     }, {
+    //                         yAxis: '7.49'
+    //                     }],
+    //                     [{
+    //                         yAxis: '7.49',
+    //                         itemStyle: {
+    //                             color: '#ff001e'
+    //                         }
+    //                     }, {
+    //                         yAxis: '7.71'
+    //                     }],
+    //                     [{
+    //                         yAxis: '6.06',
+    //                         itemStyle: {
+    //                             color: '#ff001e'
+    //                         }
+    //                     }, {
+    //                         yAxis: '6.31'
+    //                     }]
+    //                 ]
+    //             },
+    //         },
+    //         {name : 'R',type: 'line',data: rangeData}
+    //     ]
+    // };
+
+
+
+
+</script>
+
+
+</body>
+</html>

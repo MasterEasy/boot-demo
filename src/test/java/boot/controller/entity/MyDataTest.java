@@ -1,8 +1,6 @@
 package boot.controller.entity;
 
-import boot.test.spc.DataRepository;
-import boot.test.spc.DataService;
-import boot.test.spc.data;
+import boot.test.spc.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,8 +15,8 @@ class MyDataTest {
 
     @Autowired
     private DataRepository dataRepository;
-    //@Autowired
-    //private TeamRepository teamService;
+    @Autowired
+    private TeamRepository teamService;
 
     @Autowired
     private DataService dataService;
@@ -33,7 +31,7 @@ class MyDataTest {
         for (int i = 1; i <= list.size(); i++) {
             data d = new data();
             d.setId(i);
-            d.setData(list.get(i-1));
+            d.setData(list.get(i - 1));
 
             int j = i;
 
@@ -59,7 +57,7 @@ class MyDataTest {
     }
 
     @Test
-    public void test2(){
+    public void test2() {
         for (int i = 1; i <= 12; i++) {
 
             List<data> byTeamId = dataService.findByTeamId(String.valueOf(i));
@@ -68,8 +66,34 @@ class MyDataTest {
             //int sum = byTeamId.stream().map(data -> Integer.parseInt(data.getData())).mapToInt(Integer::intValue).sum();
             //AtomicReference<Integer> k = new AtomicReference<>(0);
             //k.updateAndGet(v -> v + Integer.parseInt(data.getData()));
-            System.out.println(i+ "总值===" + sum);
-            System.out.println(i+ "平均值==="+avg);
+
+            double max = 0;
+            double min = 0;
+            for (data data : byTeamId) {
+                double value = Double.parseDouble(data.getData());
+                if (max == 0) {
+                    max = value;
+                } else if (max > value) {
+                    min = value;
+                } else {
+                    max = value;
+                }
+            }
+
+            System.out.println(i + "总值===" + sum);
+            System.out.println(i + "平均值===" + avg);
+            System.out.println(i + "极差===" + (max - min));
+
+            for (int k = 0; k < 12; k++) {
+                Team team = new Team();
+                team.setId(Integer.toString(k+1));
+                team.setSum(Double.toString(sum));
+                team.setAvg(String.valueOf(avg));
+                team.setRange(Double.toString((max-min)));
+                //save
+                //teamService.save(team);
+            }
+
         }
 
     }
