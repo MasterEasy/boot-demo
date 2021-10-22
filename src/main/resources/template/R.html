@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+
+  <!--设置颜色-->
+  <!--https://bbs.csdn.net/topics/392568329-->
+
+  <!-- 引入刚刚下载的 ECharts 文件 -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.2.1/dist/echarts.js"></script>
+
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+<!-- 为 ECharts 准备一个定义了宽高的 DOM -->
+<div id="main" style="width: 600px;height:400px;"></div>
+<script type="text/javascript">
+
+  // 基于准备好的dom，初始化echarts实例
+  var myChart = echarts.init(document.getElementById('main'));
+
+  const testData = [{value: 1,itemStyle:{color:'red'}},{value: 6,itemStyle:{color:'red'}}];
+
+  axios.get('http://192.168.2.251:8081/spc/getSpc', {})
+          .then(function (res) {
+            const allData = res.data;
+            //均值
+            let seriesData = [];
+            //极差值
+            let rangeData = [];
+            //x轴坐标值
+            let xData = [];
+            //中心限
+            let center = 0;
+            //上限
+            let upper = 0;
+            //下限
+            let lower = 0;
+            allData.forEach(data => {
+              const {upper, center, lower, sum, avg, range, id} = data;
+              let seriesValue = {value: avg, itemStyle: {color: avg > upper || avg < lower ? 'red' : 'skyblue'}};
+              seriesData.push(seriesValue);
+              xData.push(Number(id));
+              rangeData.push(range);
+            });
+            //异步赋值
+            upper = allData[1].upper;
+            center = allData[1].center;
+            lower = allData[1].lower;
+            console.log(upper,center,lower)
+            //升序排序
+            xData.sort(function (a,b) {
+              return a-b;
+            });
+
+            myChart.setOption({
+              title: {
+                text: 'SPC R图'
+              },
+              tooltip: {
+                trigger: 'axis'
+              },
+              backgroundColor: 'white',
+              xAxis: {
+                type: 'category',
+                boundaryGap: false, //
+                data: xData,
+                //show: false,
+                splitLine: {
+                  show: false
+                }
+              },
+              yAxis: {
+                //show: false,
+                splitLine: {
+                  show: false
+                },
+                type: 'value',
+                scale: true,
+                //precision: 6,
+                //splitNumber: 10,
+                //boundaryGap: [0.001, 0.001],
+                // splitArea: { show: true }
+                //type: 'category',
+                //data: [1,2,3,4,5,6,7,8,9]
+              },
+              series: [
+                {name : 'R',type: 'line',data: rangeData}
+              ]
+            });
+
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+
+  // 使用刚指定的配置项和数据显示图表。
+
+  myChart.on('click', function (params) {
+    // 控制台打印数据的名称
+    // console.log(params.name);
+    // console.log(params.componentType);
+    // console.log(params.seriesType);
+    console.log(params.type)
+
+    if (params.componentType === 'series') {
+      if (params.seriesType === 'line') {
+        if (params.dataType === 'edge') {
+          // 点击到了 graph 的 edge（边）上。
+          alert(1)
+        } else {
+          // 点击到了 graph 的 node（节点）上。
+
+          alert(params.name);
+        }
+      }
+    }
+  });
+
+</script>
+
+
+</body>
+</html>
